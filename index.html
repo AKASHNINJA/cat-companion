@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Companion — Your Pixel Cat Friend</title>
+  <meta name="description" content="A pixel art cat companion that reacts to your mouse, keyboard and scrolls. Includes a Pomodoro timer and stretch reminders. Customize its color and pattern." />
+  <meta property="og:title" content="Cat Companion — Your Pixel Cat Friend" />
+  <meta property="og:description" content="A pixel art cat that lives in your browser. Reacts to your mouse, keyboard, and scrolls." />
+  <meta name="theme-color" content="#0a0a0f" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Toast Notifications ── -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ── Pomodoro Widget (top-right) ── -->
+  <aside id="pomo-widget" aria-label="Pomodoro Timer">
+    <div class="pomo-header">
+      <span class="pomo-title">POMODORO</span>
+      <span class="pomo-sessions-badge">🍅 <span id="pomo-sessions">0</span></span>
+    </div>
+    <div class="pomo-progress-wrap">
+      <div class="pomo-progress-bar">
+        <div class="pomo-progress-fill" id="pomo-progress"></div>
+      </div>
+      <span id="pomo-time">25:00</span>
+      <span id="pomo-label" class="pomo-label focus">FOCUS</span>
+    </div>
+    <div class="pomo-controls">
+      <button class="pomo-btn" id="pomo-start">START</button>
+      <button class="pomo-btn" id="pomo-reset">RESET</button>
+      <button class="pomo-btn" id="pomo-skip">SKIP</button>
+    </div>
+    <div class="pomo-settings">
+      <div class="pomo-setting-item">
+        <label for="pomo-work-input">WORK (min)</label>
+        <input type="number" id="pomo-work-input" min="1" max="90" value="25" />
+      </div>
+      <div class="pomo-setting-item">
+        <label for="pomo-break-input">BREAK (min)</label>
+        <input type="number" id="pomo-break-input" min="1" max="30" value="5" />
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="app-container">
+    <section class="hero" aria-label="Introduction">
+      <p class="hero-eyebrow">✦ Your new desk companion ✦</p>
+      <h1>A <span>Pixel Cat</span><br/>That Lives In<br/>Your Browser</h1>
+      <p class="hero-sub">
+        Reacts to your mouse, keyboard, and scrolls.<br/>
+        Reminds you to stretch. Includes a Pomodoro timer.<br/>
+        Customize its color &amp; pattern.
+      </p>
+      <div class="feature-tags" role="list" aria-label="Features">
+        <span class="tag" role="listitem">🖱️ Mouse Tracking</span>
+        <span class="tag" role="listitem">⌨️ Keyboard Reactions</span>
+        <span class="tag" role="listitem">📜 Scroll Aware</span>
+        <span class="tag" role="listitem">🧘 Stretch Reminders</span>
+        <span class="tag" role="listitem">🍅 Pomodoro Timer</span>
+        <span class="tag" role="listitem">🎨 Customizable</span>
+      </div>
+    </section>
+
+    <section class="demo-area" aria-label="Interactive Demo">
+      <h2>TRY IT OUT</h2>
+      <p>Type below, move your mouse, or scroll the page — your cat is watching everything.</p>
+      <textarea
+        class="type-area"
+        id="type-area"
+        placeholder="Start typing here and watch the cat go wild..."
+        rows="3"
+        aria-label="Demo typing area"
+      ></textarea>
+      <div class="interactions-grid" role="list" aria-label="Cat interactions">
+        <div class="interaction-card" role="listitem">
+          <span class="icon">🖱️</span>
+          <span>Move mouse<br/>to make cat<br/>follow</span>
+        </div>
+        <div class="interaction-card" role="listitem">
+          <span class="icon">⌨️</span>
+          <span>Type fast<br/>for hyper<br/>mode</span>
+        </div>
+        <div class="interaction-card" role="listitem">
+          <span class="icon">📜</span>
+          <span>Scroll to see<br/>cat look<br/>up/down</span>
+        </div>
+        <div class="interaction-card" role="listitem">
+          <span class="icon">🐾</span>
+          <span>Click the<br/>cat for<br/>sparkles</span>
+        </div>
+        <div class="interaction-card" role="listitem">
+          <span class="icon">🎨</span>
+          <span>Use ⚙️ to<br/>customize<br/>your cat</span>
+        </div>
+        <div class="interaction-card" role="listitem">
+          <span class="icon">🧘</span>
+          <span>Sit still for<br/>sleep mode<br/>🔟 sec</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Cat Widget (bottom-right, draggable) ── -->
+  <div id="cat-widget" role="img" aria-label="Pixel cat companion">
+    <div class="cat-stage">
+      <canvas id="cat-canvas" width="64" height="64" aria-hidden="true"></canvas>
+    </div>
+    <div id="cat-mood" aria-live="polite">😊 Content</div>
+    <button id="settings-btn" aria-expanded="false" aria-controls="settings-panel" title="Customize your cat">⚙️</button>
+  </div>
+
+  <!-- ── Settings / Customizer Panel ── -->
+  <aside id="settings-panel" role="dialog" aria-label="Cat customization settings" aria-modal="false">
+
+    <div class="panel-section">
+      <h3>Cat Color</h3>
+      <div id="color-grid" role="radiogroup" aria-label="Cat color options"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="panel-section">
+      <h3>Pattern</h3>
+      <div id="pattern-grid" role="radiogroup" aria-label="Cat pattern options"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="panel-section">
+      <h3>Stretch Reminder</h3>
+      <div class="stretch-row">
+        <label for="stretch-interval-input">Every</label>
+        <input type="number" id="stretch-interval-input" min="5" max="120" value="30" aria-label="Stretch reminder interval in minutes" />
+        <span class="unit">min</span>
+      </div>
+      <button id="test-stretch-btn">🧘 Test Stretch Now</button>
+    </div>
+
+  </aside>
+
+  <!-- ── Scripts (load order matters) ── -->
+  <script src="cat.js"></script>
+  <script src="behaviors.js"></script>
+  <script src="pomodoro.js"></script>
+  <script src="reminders.js"></script>
+  <script src="customizer.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
