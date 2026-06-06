@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ───────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg2:    #12121a;
+      --bg3:    #1a1a26;
+      --border: #2a2a3d;
+      --accent: #f5c842;
+      --accent2:#ff8c42;
+      --green:  #4ade80;
+      --text:   #e8e8f0;
+      --text2:  #9898b0;
+      --pixel:  'Press Start 2P', monospace;
+      --radius: 4px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.7);
+      --glow:   0 0 20px rgba(245,200,66,0.3);
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── Widget ──────────────────────────────────── */
+    #companion-widget {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .cat-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 4px 12px rgba(245,200,66,0.35));
+      transition: filter 0.3s;
+    }
+    .cat-stage:hover { filter: drop-shadow(0 4px 24px rgba(245,200,66,0.6)); }
+
+    #cat-canvas {
+      cursor: pointer;
+      animation: catFloat 4s ease-in-out infinite;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    @keyframes catFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    #cat-mood {
+      font-family: var(--pixel);
+      font-size: 0.35rem;
+      color: var(--text2);
+      background: rgba(10,10,15,0.88);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3px 7px;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Widget control buttons */
+    .widget-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .widget-btn {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: var(--radius);
+      padding: 3px 7px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    .widget-btn:hover, .widget-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: var(--glow);
+    }
+
+    /* ── Settings Panel ──────────────────────────── */
+    #settings-panel {
+      position: fixed;
+      bottom: 190px;
+      right: 28px;
+      width: 284px;
+      background: rgba(18,18,26,0.96);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      z-index: 11;
+      transform: translateY(10px) scale(0.95);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #settings-panel.open {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .panel-section { margin-bottom: 1.1rem; }
+    .panel-section:last-child { margin-bottom: 0; }
+    .panel-section h3 {
+      font-family: var(--pixel);
+      font-size: 0.38rem;
+      color: var(--accent);
+      margin-bottom: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1rem 0;
+    }
+
+    /* Animal grid */
+    #animal-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 6px;
+    }
+    .animal-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 4px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .animal-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--glow); }
+    .animal-btn.active { border-color: var(--accent); background: rgba(245,200,66,0.12); box-shadow: 0 0 0 2px var(--accent),var(--glow); }
+    .animal-emoji { font-size: 1.2rem; line-height: 1; }
+    .animal-label { font-family: var(--pixel); font-size: 0.28rem; color: var(--text2); letter-spacing: 0.04em; }
+    .animal-btn.active .animal-label { color: var(--accent); }
+
+    /* Color grid */
+    #color-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 6px;
+    }
+    .color-swatch {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .color-swatch:hover { transform: scale(1.1); border-color: var(--text); }
+    .color-swatch.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent),var(--glow); }
+
+    /* Pattern grid */
+    #pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 6px;
+    }
+    .pattern-btn {
+      font-family: var(--pixel);
+      font-size: 0.35rem;
+      padding: 6px 4px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.05em;
+    }
+    .pattern-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .pattern-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.1); }
+
+    /* ── Drag handle ─────────────────────────────── */
+    #drag-handle {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 120px;
+      height: 200px;
+      cursor: grab;
+      z-index: 9;
+    }
+    #drag-handle:active { cursor: grabbing; }
+
+    /* ── Sparkles ────────────────────────────────── */
+    .sparkle {
+      position: fixed;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 999;
+      animation: sparkleAnim 1s ease forwards;
+    }
+    @keyframes sparkleAnim {
+      0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity:1; }
+      100% { transform: translate(var(--dx),var(--dy)) scale(0) rotate(180deg); opacity:0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Invisible drag surface behind the widget -->
+  <div id="drag-handle"></div>
+
+  <!-- ── Companion widget ── -->
+  <div id="companion-widget">
+    <div class="cat-stage">
+      <canvas id="cat-canvas" aria-hidden="true"></canvas>
+    </div>
+    <div id="cat-mood">😊 Content</div>
+    <div class="widget-btns">
+      <button class="widget-btn" id="settings-btn" title="Customize">⚙️</button>
+      <button class="widget-btn" id="ctx-btn" title="Options">⋯</button>
+    </div>
+  </div>
+
+  <!-- ── Settings panel ── -->
+  <aside id="settings-panel">
+    <div class="panel-section">
+      <h3>Animal</h3>
+      <div id="animal-grid"></div>
+    </div>
+    <hr class="section-divider" />
+    <div class="panel-section">
+      <h3>Color</h3>
+      <div id="color-grid"></div>
+    </div>
+    <hr class="section-divider" />
+    <div class="panel-section">
+      <h3>Pattern</h3>
+      <div id="pattern-grid"></div>
+    </div>
+  </aside>
+
+  <!-- ── Scripts ── -->
+  <script src="cat.js"></script>
+  <script src="behaviors.js"></script>
+  <script src="customizer.js"></script>
+  <script>
+  'use strict';
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // ── Animal renderer ───────────────────────────────────
+    const canvas   = document.getElementById('cat-canvas');
+    const cat      = new CatRenderer(canvas);
+    const behavior = new BehaviorEngine(cat);
+    const customizer = new CatCustomizer(cat);
+
+    // ── Mood label ────────────────────────────────────────
+    const moodEl = document.getElementById('cat-mood');
+    const MOODS = {
+      idle:'😊 Content', typing:'😤 Focused', excited:'🤩 Hyper!',
+      sleeping:'😴 Sleepy', stretching:'🧘 Stretching', celebrating:'🎉 Happy!',
+      napping:'💤 Napping', scroll_up:'👆 Curious', scroll_down:'👇 Curious',
+      swipe:'🐾 Playful',
+    };
+    setInterval(() => {
+      moodEl.textContent = MOODS[behavior.state] || '😊 Content';
+    }, 500);
+
+    // ── Settings toggle ───────────────────────────────────
+    const panel      = document.getElementById('settings-panel');
+    const settingsBtn = document.getElementById('settings-btn');
+
+    settingsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = panel.classList.toggle('open');
+      settingsBtn.classList.toggle('active', open);
+    });
+    document.addEventListener('click', (e) => {
+      if (!panel.contains(e.target) && !settingsBtn.contains(e.target)) {
+        panel.classList.remove('open');
+        settingsBtn.classList.remove('active');
+      }
+    });
+
+    // ── Right-click context menu (Quit, etc.) ─────────────
+    const ctxBtn = document.getElementById('ctx-btn');
+    ctxBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (window.electronAPI) window.electronAPI.showContextMenu();
+    });
+    canvas.addEventListener('contextmenu', () => {
+      if (window.electronAPI) window.electronAPI.showContextMenu();
+    });
+
+    // ── Sparkles on click ─────────────────────────────────
+    canvas.addEventListener('click', (e) => {
+      behavior.triggerCelebrate();
+      spawnSparkles(e.clientX, e.clientY);
+    });
+    function spawnSparkles(x, y) {
+      ['✨','⭐','🐾','💫','🌟'].forEach((em, i) => {
+        const el = document.createElement('div');
+        el.className = 'sparkle';
+        el.textContent = ['✨','⭐','🐾','💫','🌟'][Math.floor(Math.random()*5)];
+        el.style.cssText = `left:${x}px;top:${y}px;--dx:${(Math.random()-0.5)*80}px;--dy:${-Math.random()*80-20}px`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+      });
+    }
+
+    // ── Drag (moves the OS window) ────────────────────────
+    const dragHandle = document.getElementById('drag-handle');
+    const widget     = document.getElementById('companion-widget');
+    let dragging = false, startMouseX, startMouseY, startWinX, startWinY;
+
+    async function startDrag(e) {
+      if (e.button !== 0) return;
+      dragging = true;
+      startMouseX = e.screenX;
+      startMouseY = e.screenY;
+      if (window.electronAPI) {
+        const pos = await window.electronAPI.getWindowPosition();
+        startWinX = pos[0];
+        startWinY = pos[1];
+      } else {
+        startWinX = 0; startWinY = 0;
+      }
+    }
+
+    dragHandle.addEventListener('mousedown', startDrag);
+
+    document.addEventListener('mousemove', (e) => {
+      if (dragging && window.electronAPI) {
+        const dx = e.screenX - startMouseX;
+        const dy = e.screenY - startMouseY;
+        window.electronAPI.moveWindow(startWinX + dx, startWinY + dy);
+      }
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    // ── Click-through: ignore mouse on transparent areas ──
+    // Only needed when running inside Electron
+    if (window.electronAPI) {
+      document.addEventListener('mousemove', (e) => {
+        // Check if cursor is over any meaningful element (not html/body)
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const overWidget = el && el !== document.documentElement && el !== document.body;
+        window.electronAPI.setIgnoreMouseEvents(!overWidget, { forward: true });
+      });
+    }
+
+  });
+  </script>
+</body>
+</html>

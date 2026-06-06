@@ -1,0 +1,13 @@
+{
+  "name": "pixel-companion",
+  "version": "1.0.0",
+  "description": "Pixel animal desktop overlay companion",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "install-electron": "npm install"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
