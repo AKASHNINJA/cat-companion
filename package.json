@@ -1,13 +1,71 @@
 {
   "name": "pixel-companion",
   "version": "1.0.0",
-  "description": "Pixel animal desktop overlay companion",
+  "description": "Pixel animal desktop overlay — always on top, works over every app",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "install-electron": "npm install"
+    "start":      "electron .",
+    "prebuild":   "node scripts/create-icon.js",
+    "build:win":  "electron-builder --win --x64",
+    "build:mac":  "electron-builder --mac",
+    "build":      "electron-builder",
+    "pack":       "electron-builder --dir"
+  },
+  "build": {
+    "appId":       "com.akashninja.pixel-companion",
+    "productName": "Pixel Companion",
+    "copyright":   "Copyright © 2026 AKASHNINJA",
+    "asar":        true,
+    "directories": {
+      "output":         "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "companion.html",
+      "cat.js",
+      "behaviors.js",
+      "customizer.js",
+      "pomodoro.js",
+      "reminders.js",
+      "style.css"
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon":   "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] }
+      ],
+      "icon":     "build/icon.icns",
+      "category": "public.app-category.utilities",
+      "darkModeSupport": true,
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "nsis": {
+      "oneClick":                        false,
+      "perMachine":                      false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall":        true,
+      "shortcutName":                    "Pixel Companion"
+    },
+    "dmg": {
+      "title":   "Pixel Companion",
+      "background": null
+    },
+    "publish": {
+      "provider": "github",
+      "owner":    "AKASHNINJA",
+      "repo":     "cat-companion"
+    }
   },
   "devDependencies": {
-    "electron": "^31.0.0"
+    "electron":         "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "jimp":             "^0.22.12"
   }
 }

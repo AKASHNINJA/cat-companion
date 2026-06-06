@@ -1,0 +1,125 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ['v*.*.*']        # auto-release on version tags like v1.0.0
+  workflow_dispatch:         # also runnable manually from GitHub Actions tab
+
+permissions:
+  contents: write            # needed to create GitHub Releases
+
+jobs:
+  # ── Windows build ────────────────────────────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icon
+        run: node scripts/create-icon.js
+
+      - name: Build Windows installer
+        run: npx electron-builder --win --x64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*.exe
+          if-no-files-found: error
+
+  # ── macOS build (Intel + Apple Silicon) ─────────────────────────
+  build-mac:
+    runs-on: macos-latest       # arm64 runner (M-series)
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icon PNG + ICO
+        run: node scripts/create-icon.js
+
+      - name: Generate ICNS from PNG (macOS only)
+        run: |
+          mkdir -p build/icon.iconset
+          for sz in 16 32 64 128 256 512; do
+            sips -z $sz $sz build/icon.png --out "build/icon.iconset/icon_${sz}x${sz}.png"     > /dev/null
+            double=$((sz * 2))
+            if [ $double -le 1024 ]; then
+              sips -z $double $double build/icon.png \
+                --out "build/icon.iconset/icon_${sz}x${sz}@2x.png" > /dev/null
+            fi
+          done
+          iconutil -c icns build/icon.iconset -o build/icon.icns
+          echo "✓ build/icon.icns created"
+
+      - name: Build macOS DMG (universal — Intel + Apple Silicon)
+        run: npx electron-builder --mac --x64 --arm64 --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: dist/*.dmg
+          if-no-files-found: error
+
+  # ── Create GitHub Release (only on version tags) ─────────────────
+  release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: release-files
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: release-files
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Pixel Companion ${{ github.ref_name }}"
+          body: |
+            ## 🐱 Pixel Companion ${{ github.ref_name }}
+
+            A pixel-art animal companion that floats over all your apps.
+
+            ### Download
+            | Platform | File | Notes |
+            |---|---|---|
+            | **Windows 10/11** | `Pixel-Companion-Setup-*.exe` | Run installer, then launch from Start Menu |
+            | **macOS** | `Pixel-Companion-*.dmg` | Open DMG, drag to Applications |
+
+            > **macOS note:** On first launch, right-click → Open (to bypass Gatekeeper on unsigned builds).
+
+            ### What's new
+            See [commit history](../../commits/${{ github.ref_name }}) for details.
+          files: release-files/*
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
