@@ -56,11 +56,10 @@ Black · Orange · Grey · Cream · Siamese · Calico · Tuxedo · Lavender
 
 ### Windows
 
-1. Go to the [**Releases**](https://github.com/AKASHNINJA/cat-companion/releases/latest) page
-2. Download `Pixel-Companion-Setup-x.x.x.exe`
-3. Run the installer — choose your install location
-4. Launch **Pixel Companion** from the Start Menu or Desktop shortcut
-5. Your companion appears in the bottom-right corner — drag it anywhere!
+1. Windows Download Link - [https://github.com/AKASHNINJA/cat-companion/releases/download/v1.0.0/Pixel.Companion.Setup.1.0.0.exe](url)
+2. Run the installer — choose your install location
+3. Launch **Pixel Companion** from the Start Menu or Desktop shortcut
+4. Your companion appears in the bottom-right corner — drag it anywhere!
 
 > Windows may show a SmartScreen warning on first launch (unsigned build). Click **More info → Run anyway**.
 
