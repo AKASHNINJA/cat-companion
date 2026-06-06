@@ -237,6 +237,49 @@ body::before {
   margin: 1rem 0;
 }
 
+/* ─── Animal Picker ──────────────────────────────────────── */
+#animal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.animal-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.animal-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--glow);
+}
+.animal-btn.active {
+  border-color: var(--accent);
+  background: rgba(245,200,66,0.12);
+  box-shadow: 0 0 0 2px var(--accent), var(--glow);
+}
+.animal-emoji {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.animal-label {
+  font-family: var(--pixel);
+  font-size: 0.28rem;
+  color: var(--text2);
+  letter-spacing: 0.04em;
+}
+.animal-btn.active .animal-label {
+  color: var(--accent);
+}
+
 /* ─── Color Swatches ─────────────────────────────────────── */
 #color-grid {
   display: grid;

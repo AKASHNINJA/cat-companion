@@ -1,4 +1,3 @@
-// customizer.js — Cat color/pattern customization panel
 'use strict';
 
 class CatCustomizer {
@@ -7,6 +6,7 @@ class CatCustomizer {
     this.onChange = onChange || (() => {});
     this.currentPalette = 'orange';
     this.currentPattern = 'solid';
+    this.currentAnimal  = 'cat';
     this._loadPrefs();
     this._buildPanel();
     this._applyToRenderer();
@@ -17,6 +17,7 @@ class CatCustomizer {
       const saved = JSON.parse(localStorage.getItem('cat-companion-prefs') || '{}');
       if (saved.palette && window.CAT_PALETTES[saved.palette]) this.currentPalette = saved.palette;
       if (saved.pattern && window.CAT_PATTERNS[saved.pattern]) this.currentPattern = saved.pattern;
+      if (saved.animal  && window.CAT_ANIMALS[saved.animal])   this.currentAnimal  = saved.animal;
     } catch(e) {}
   }
 
@@ -24,19 +25,42 @@ class CatCustomizer {
     localStorage.setItem('cat-companion-prefs', JSON.stringify({
       palette: this.currentPalette,
       pattern: this.currentPattern,
+      animal:  this.currentAnimal,
     }));
   }
 
   _applyToRenderer() {
+    this.cat.setAnimal(this.currentAnimal);
     this.cat.setPalette(this.currentPalette);
     this.cat.setPattern(this.currentPattern);
     this.cat.render();
-    this.onChange({ palette: this.currentPalette, pattern: this.currentPattern });
+    this.onChange({ palette: this.currentPalette, pattern: this.currentPattern, animal: this.currentAnimal });
   }
 
   _buildPanel() {
-    const panel = document.getElementById('customizer-panel');
+    const panel = document.getElementById('settings-panel');
     if (!panel) return;
+
+    // Animal picker
+    const animalGrid = panel.querySelector('#animal-grid');
+    if (animalGrid) {
+      animalGrid.innerHTML = '';
+      for (const [key, anim] of Object.entries(window.CAT_ANIMALS)) {
+        const btn = document.createElement('button');
+        btn.className = 'animal-btn' + (key === this.currentAnimal ? ' active' : '');
+        btn.id = `animal-${key}`;
+        btn.innerHTML = `<span class="animal-emoji">${anim.emoji}</span><span class="animal-label">${anim.name}</span>`;
+        btn.setAttribute('aria-label', `${anim.name} companion`);
+        btn.addEventListener('click', () => {
+          this.currentAnimal = key;
+          document.querySelectorAll('.animal-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this._applyToRenderer();
+          this._savePrefs();
+        });
+        animalGrid.appendChild(btn);
+      }
+    }
 
     // Color swatches
     const colorGrid = panel.querySelector('#color-grid');
@@ -48,7 +72,7 @@ class CatCustomizer {
         swatch.id = `swatch-${key}`;
         swatch.title = pal.name;
         swatch.style.background = `linear-gradient(135deg, ${pal.body} 50%, ${pal.belly} 50%)`;
-        swatch.setAttribute('aria-label', `${pal.name} cat color`);
+        swatch.setAttribute('aria-label', `${pal.name} color`);
         swatch.addEventListener('click', () => {
           this.currentPalette = key;
           document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
