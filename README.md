@@ -1,12 +1,8 @@
 # Cat Companion 🐱
 
-A pixel-art cat companion that lives in your browser — inspired by [Comnyang](https://comnyang.com/).
+A pixel-art cat companion that lives in your browser — inspired by [Comnyang]
 
-![Cat Companion](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-ff69b4)
-![License](https://img.shields.io/badge/license-MIT-green)
-![HTML](https://img.shields.io/badge/HTML-CSS-JS-blue)
-
-## ✨ Features
+✨ Features
 
 - 🖱️ **Mouse Tracking** — Cat's eyes follow your cursor; flips direction to face you
 - ⌨️ **Keyboard Reactions** — Cat bobs when you type, goes frantic during fast typing
